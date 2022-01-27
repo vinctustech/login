@@ -28,12 +28,14 @@ const Screen: FC = () => {
   const [login, setLogin] = useState<any>()
   const [data, setData] = useState(false)
   const [logout, setLogout] = useState(false)
+  const [refresh, setRefresh] = useState(false)
   const { token, setToken } = useLogin()
 
   function handleRegister(credentials: any) {
     setRegister(credentials)
     setLogin(undefined)
     setLogout(false)
+    setRefresh(false)
     setData(false)
     fetch('http://localhost:8080/users', {
       method: 'POST',
@@ -51,6 +53,7 @@ const Screen: FC = () => {
   function handleLogin(credentials: any) {
     setLogin(credentials)
     setLogout(false)
+    setRefresh(false)
     setRegister(undefined)
     setData(false)
     fetch('http://localhost:8080/auth/login', {
@@ -72,6 +75,7 @@ const Screen: FC = () => {
   function handleGetData() {
     setLogin(undefined)
     setLogout(false)
+    setRefresh(false)
     setRegister(undefined)
     setData(true)
     fetch('http://localhost:8080/data', {
@@ -86,9 +90,27 @@ const Screen: FC = () => {
     })
   }
 
+  function handleRefresh() {
+    setLogin(undefined)
+    setLogout(false)
+    setRefresh(true)
+    setRegister(undefined)
+    setData(false)
+    fetch('http://localhost:8080/auth/refresh', {
+      credentials: 'include', // also needed: https://stackoverflow.com/questions/42710057/fetch-cannot-set-cookies-received-from-the-server
+    }).then(async (response) => {
+      const json = await response.json()
+
+      setResponseData(JSON.stringify({ status: response.status, json }, null, 2))
+
+      if (response.ok) setToken(json.accessToken)
+    })
+  }
+
   function handleLogout() {
     setLogin(undefined)
     setLogout(true)
+    setRefresh(false)
     setRegister(undefined)
     setData(false)
     fetch('http://localhost:8080/auth/logout', {
@@ -207,9 +229,13 @@ const Screen: FC = () => {
           Get data
         </Button>
         <Elem colStart="2" colEnd="6">
-          <Text>
-            <pre>{data ? 'API request' : ''}</pre>
-          </Text>
+          <Text>{data ? 'API request' : ''}</Text>
+        </Elem>
+        <Button rounded={false} outlined onClick={handleRefresh} role="primary">
+          Refresh
+        </Button>
+        <Elem colStart="2" colEnd="6">
+          <Text>{refresh ? 'Refresh' : ''}</Text>
         </Elem>
         <Button rounded={false} onClick={handleLogout} role="primary">
           Logout
