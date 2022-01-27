@@ -192,7 +192,9 @@ const Screen: FC = () => {
             <pre>{JSON.stringify(login, null, 2)}</pre>
           </Text>
         </Elem>
-        <Button onClick={handleLogout}>Logout</Button>
+        <Button rounded={false} onClick={handleLogout} role="primary">
+          Logout
+        </Button>
         <Text>{logout ? 'logged out' : ''}</Text>
       </Grid>
     </Card>
