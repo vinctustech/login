@@ -31,6 +31,8 @@ const Screen: FC = () => {
 
   function handleRegister(credentials: any) {
     setRegister(credentials)
+    setLogin(undefined)
+    setLogout(false)
     fetch('http://localhost:8080/users', {
       method: 'POST',
       headers: {
@@ -47,6 +49,7 @@ const Screen: FC = () => {
   function handleLogin(credentials: any) {
     setLogin(credentials)
     setLogout(false)
+    setRegister(undefined)
     fetch('http://localhost:8080/auth/login', {
       method: 'POST',
       credentials: 'include', // needed: https://stackoverflow.com/questions/42710057/fetch-cannot-set-cookies-received-from-the-server
@@ -64,8 +67,9 @@ const Screen: FC = () => {
   }
 
   function handleLogout() {
-    setLogin({})
+    setLogin(undefined)
     setLogout(true)
+    setRegister(undefined)
     fetch('http://localhost:8080/auth/logout', {
       credentials: 'include', // also needed: https://stackoverflow.com/questions/42710057/fetch-cannot-set-cookies-received-from-the-server
     }).then(async (response) => {
