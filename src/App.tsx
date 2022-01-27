@@ -1,5 +1,5 @@
 import React, { FC, useContext, useState } from 'react'
-import { Button, Card, Center, Elem, Form, Grid, Input, Text } from '@edadma/react-tailwind'
+import { Button, Card, Elem, Form, Grid, Input, Text } from '@edadma/react-tailwind'
 import * as yup from 'yup'
 
 export type Token = string | null
@@ -24,9 +24,25 @@ export const LoginProvider: FC = ({ children }) => {
 
 const Screen: FC = () => {
   const [responseData, setResponseData] = useState<string | undefined>()
+  const [register, setRegister] = useState<any>()
   const [login, setLogin] = useState<any>()
   const [logout, setLogout] = useState(false)
   const { token, setToken } = useLogin()
+
+  function handleRegister(credentials: any) {
+    setRegister(credentials)
+    fetch('http://localhost:8080/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: credentials.email, password: credentials.password }),
+    }).then(async (response) => {
+      const json = await response.json()
+
+      setResponseData(JSON.stringify({ status: response.status, json }, null, 2))
+    })
+  }
 
   function handleLogin(credentials: any) {
     setLogin(credentials)
@@ -74,6 +90,67 @@ const Screen: FC = () => {
         <Elem colStart="2" colEnd="6">
           <Text>
             <pre>{responseData}</pre>
+          </Text>
+        </Elem>
+        <Form
+          init={{
+            initialValues: { email: '', password: '', passwordConfirm: '' },
+            validationSchema: yup.object({
+              email: yup.string().required('Email is required.').email('Must be a valid email.'),
+              password: yup
+                .string()
+                .required('Password is required.')
+                .min(8, 'Password must be at least 8 characters.')
+                .matches(
+                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^0-9a-zA-Z])/,
+                  'Password must contain at least: one uppercase, one lowercase, one number, and one special character'
+                ),
+              passwordConfirm: yup
+                .string()
+                .required('Confirmed password is required.')
+                .min(8, 'Confirmed password must be at least 8 characters.')
+                .matches(
+                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^0-9a-zA-Z])/,
+                  'Confirmed password must contain at least: one uppercase, one lowercase, one number, and one special character'
+                )
+                .oneOf([yup.ref('password')], 'Passwords do not match'),
+            }),
+            onSubmit: handleRegister,
+          }}
+        >
+          <Input
+            name="email"
+            label="Your email"
+            placeholder="name@company.com"
+            pill
+            role="info"
+            className="w-full"
+          />
+          <Input
+            type="password"
+            name="password"
+            label="Your desired password"
+            placeholder="••••••••"
+            pill
+            role="info"
+            className="w-full"
+          />
+          <Input
+            type="password"
+            name="passwordConfirm"
+            label="Confirm your password"
+            placeholder="••••••••"
+            pill
+            role="info"
+            className="w-full"
+          />
+          <Button type="submit" role="info" pill className="w-full">
+            Register
+          </Button>
+        </Form>
+        <Elem colStart="2" colEnd="6">
+          <Text>
+            <pre>{JSON.stringify(register, null, 2)}</pre>
           </Text>
         </Elem>
         <Form
